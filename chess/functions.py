@@ -12,6 +12,8 @@
 #needed for making and using requests respectively
 import requests
 import json
+
+
 # the variables that are used to fill the board stored in order
 fen_sequence = (18, 28, 38, 48, 58, 68, 78, 88
                 , 17, 27, 37, 47, 57, 67, 77, 87
@@ -26,6 +28,7 @@ fen_sequence = (18, 28, 38, 48, 58, 68, 78, 88
 #creates a board from a fen code. a fen code is a code that describes what pieces are on the board, and where they are. It also contains meta info about the game,
 # like the turn
 def create_board(fen:str, depth:int):
+    """creates a board"""
     # Initialize the variables list with empty spaces
     board = [0] * 89
 
@@ -56,15 +59,24 @@ def create_board(fen:str, depth:int):
     board[9] = False
     # 10 stores the difficulty level (depth)
     board[10] = depth
-    #set up pieces using fen code
-    fen = fen.replace('/','')
+    fen_to_board(board, fen)
 
+    #the finished board is returned to the main function which will now ask for a move
+    return board
+
+
+
+
+
+# set up pieces using fen code
+def fen_to_board(board, fen):
+    """takes a fen and fills a board"""
+    fen = fen.replace('/', '')
     # 2 counters are needed because the fen has fewer characters than the board due to the summation of empty spaces (8 == ' ', ' ', ' ', ' ',' ', ' ', ' ', ' ',)
     y = 0
     i = y
-
-    #goes through all the pieces to place the piece in the fen code on the board
-    while y < len(fen) :
+    # goes through all the pieces to place the piece in the fen code on the board
+    while y < len(fen):
         piece = fen[y]
 
         if piece == 'r':
@@ -99,7 +111,7 @@ def create_board(fen:str, depth:int):
             break
         elif piece == '-':
             continue
-        #store the turn in our designated variable
+        # store the turn in our designated variable
         elif piece == 'w':
             board[0] = 'w'
             break
@@ -107,7 +119,7 @@ def create_board(fen:str, depth:int):
             board[0] = 'b'
             break
         else:
-            #small loop to place 8 spaces if an 8 is encountered. 'i' keeps counting, 'y' stagnates because it indexes the fen code
+            # small loop to place 8 spaces if an 8 is encountered. 'i' keeps counting, 'y' stagnates because it indexes the fen code
             x = int(piece)
             while x > 0:
                 board[fen_sequence[i]] = ' '
@@ -119,15 +131,11 @@ def create_board(fen:str, depth:int):
         y += 1
 
 
-
-    #the finished board is returned to the main function which will now ask for a move
-    return board
-
-
 #converts UCI notation to numeric notation
 #input something like 'a2a3'
 #output a tuple containing (12,13) the numeric notation that we will use in all calculations
 def uci_to_numeric(UCI:str):
+    """converts user input to usable move variables"""
     result = ""
     move_from = ''
     move_to = ''
@@ -147,10 +155,11 @@ def uci_to_numeric(UCI:str):
 
 #lets the API check the board, return None if the move was invalid, it will then be reverted by main()
 #otherwise return a move (a tuple with two numeric coordinates)
-def get_api_move(given_board):
+def get_stockfish_move(given_board):
+    """gets a move using the api and makes it"""
     #get response from API
     #turn json into usable dictionary
-    response = chess_api(board_to_fen(given_board),given_board[10])
+    response = stockfish_api(board_to_fen(given_board), given_board[10])
     if response == None:
         return None
     response = json.dumps(response)
@@ -183,6 +192,7 @@ def get_api_move(given_board):
 
 # Print the board. All the variables match up. 11 is a1, and 88 is h8
 def print_board(board):
+    """prints the board"""
     print(f"""
     8 [{board[18]}][{board[28]}][{board[38]}][{board[48]}][{board[58]}][{board[68]}][{board[78]}][{board[88]}]
     7 [{board[17]}][{board[27]}][{board[37]}][{board[47]}][{board[57]}][{board[67]}][{board[77]}][{board[87]}]          {board[4]}
@@ -197,6 +207,7 @@ def print_board(board):
 
 # function that makes a fen from current board layout
 def board_to_fen(given_board: list):
+    """reads fen from board to use with api"""
 
     #counts empty spaces
     counter = 0
@@ -325,12 +336,14 @@ def board_to_fen(given_board: list):
 # This API evaluates a fen and gives a move back using stockfish AI
 # input: fen in string format
 # returns data from chess-api
-def chess_api(data, depth):
+url_1 = "https://chess-api.com/v1"
+def stockfish_api(data, depth):
+    """does a call to the stockfish API"""
     if data is None:
         data = {}
     try:
         response = requests.post(
-            "https://chess-api.com/v1",
+            url_1,
             headers={"Content-Type": "application/json"},
             json={"fen": data, "depth": int(depth)}
         )
@@ -352,13 +365,15 @@ def chess_api(data, depth):
 #this API gets a puzzle fen to start a game with
 #no input
 #returns a fen from chess.com
-def get_puzzle():
+url_2 =  "https://api.chess.com/pub/puzzle/random"
+def chessdotcom_api():
+    """does a call to the chess.com API"""
     fen = ""
     #we want a puzzle where we play as white, because that is how I set up the program. I haven't seen a b puzzle yet, but this loop is a precaution
     while 'w' not in fen:
         try:
             response = requests.get(
-                "https://api.chess.com/pub/puzzle/random",
+                url_2,
                 #the api doesn't need a token, but for some reason it wants an email adress. I just gave it the one I use on chess.com
                 headers={"Content-Type": "application/json", "Accept": "application/json", "User-Agent": "timo.rouw@outlook.com"}
             )

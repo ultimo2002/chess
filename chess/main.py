@@ -22,6 +22,7 @@ from chess.mover import make_move
 
 
 def main(given_fen:str):
+    """calls all functions and checks for faults"""
     game_over = False
     depth = 0
 
@@ -29,6 +30,7 @@ def main(given_fen:str):
         depth = int(input("Op welke moeilijkheidsgraad wil je spelen? (1-18):\n"))
 
     depth = str(depth)
+    #create board storing given depth
     board = functions.create_board(given_fen, depth)
 
     while not game_over:
@@ -40,13 +42,8 @@ def main(given_fen:str):
         #we ask for a move and check if it is legal as much as we can. Together with the API it's pretty airtight
         #legality has to be earned
         legal = False
-        if board[2] >= 50:
-            print("er zijn 50 zetten gedaan waarbij geen stuk is veroverd of een pion is verzet.")
-            print("volgens de schaakregels mag u nu een remise afdwingen. Wilt u dit doen? ja/nee")
-
-            if input().lower() == 'ja':
-                print("het is een remise. Goed gespeeld!")
-                exit(0)
+        #check for the obscure 50 turn chess rule
+        check_halfmoves(board)
 
         while not legal:
             #get the move eg: A1B1
@@ -76,7 +73,7 @@ def main(given_fen:str):
 
 
         #ask the API for a responding move
-        opponent_move = (functions.get_api_move(board))
+        opponent_move = (functions.get_stockfish_move(board))
         # if the API returns -1 it found a mistake. We revert the move and ask for a new one
         if opponent_move == -1:
             board = previous_board
@@ -112,6 +109,17 @@ def main(given_fen:str):
             mover.make_move(board, opponent_move[0], opponent_move[1])
 
 
+def check_halfmoves(board):
+    """checks for obscure chess rule"""
+    if board[2] >= 50:
+        print("er zijn 50 zetten gedaan waarbij geen stuk is veroverd of een pion is verzet.")
+        print("volgens de schaakregels mag u nu een remise afdwingen. Wilt u dit doen? ja/nee")
+
+        if input().lower() == 'ja':
+            print("het is een remise. Goed gespeeld!")
+            exit(0)
+
+
 ##     ## ######## ##    ## ##     ##
 ###   ### ##       ###   ## ##     ##
 #### #### ##       ####  ## ##     ##
@@ -123,14 +131,15 @@ def main(given_fen:str):
 reaction = False
 standard_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
-
+print("\nWelkom!")
 while not reaction:
     #this is the main menu where you can play with a default fen, put in a custom fen or try a puzzle
 
-    print("Welkom!, hoe wilt u schaken?")
+
     print("1: spel tegen de computer")
     print("2: puzzel van de dag")
     print("3: eigen FEN code invoeren (u speelt als wit)")
+    print("4: uitleg over het spel")
     answer = input()
 
     #put in the default fen and run main
@@ -141,7 +150,7 @@ while not reaction:
     #get a fen from the chess.com API and run main
     elif answer == "2":
         print("wacht op reactie..,.")
-        fen = functions.get_puzzle()
+        fen = functions.chessdotcom_api()
         if fen is None:
             print("geen reactie gekregen van API... bent u online?\n\n")
             reaction = False
@@ -160,3 +169,12 @@ while not reaction:
                 print("ongeldige FEN code. Speelt u als wit?")
         main(fen)
         reaction = True
+    elif answer == '4':
+        print("""
+        Dit spel gebruikt UCI notatie;
+        typ a2a4 om een stuk van a2 naar a4 te bewegen. Hoe de stukken mogen bewegen kunt u hier lezen:
+        https://www.chess.com/learn-how-to-play-chess#chess-pieces-move
+        rokeren kan door de koning twee stappen te verplaatsen naar links of rechts, dus e1c1 voor links rokeren en e1g1 voor rechts rokeren
+        en passant is door een fout in de API helaas niet mogelijk, alle andere regels zoals promotie en de 50 halfzetten regel worden wel nageleefd        
+        
+        """)

@@ -13,7 +13,7 @@
 #       output updated board
 
 def make_move(given_board, move_from: int, move_to: int):
-    answer = True
+    """makes a move on the board"""
     promotion = False
     piece = ''
     temp = given_board[move_from]
@@ -21,11 +21,12 @@ def make_move(given_board, move_from: int, move_to: int):
     #increment halfmove counter
     if given_board[0] == 'b':
         given_board[2] += 1
+
+
     # en passant logic
     # check if this move captures en passant
-
     # capture piece below target if white captures and store it in index 6 to be awarded after move is validated
-    if given_board[1] != '' and move_to == int(given_board[1]) and given_board[0] == 'w':
+    if given_board[1] != '' and move_to == int(given_board[1]) and given_board[move_from] == '♟' and  given_board[0] == 'w':
         given_board[6] = given_board[int(given_board[1]) - 1]
         print(given_board[6])
         given_board[int(given_board[1]) - 1] = ' '
@@ -35,14 +36,16 @@ def make_move(given_board, move_from: int, move_to: int):
         given_board[4] = given_board[int(given_board[1]) + 1]
         given_board[int(given_board[1]) + 1] = ' '
 
-    # if the en passant is not captured it expires
+    # if the en passant was not captured it expires
     else:
         given_board[1] = ''
 
-    # save target square when moving pawn 2 places
+    #save target square when moving pawn 2 places (condition for en passant)
+    #first check for pawn being moved
     if given_board[move_from] == '♟' or given_board[move_from] == '♙':
         # a pawn was moved so halfmove counter is reset
         given_board[2] = 0
+        #if it was moved by 2 tiles we save the en passant tile
         if move_to - move_from == 2 or move_to - move_from == -2:
             # the average is always the target square for both sides, think about it, the math behind it is fun
             given_board[1] = str(int((move_from + move_to) / 2))
@@ -56,11 +59,11 @@ def make_move(given_board, move_from: int, move_to: int):
         # for white
         if given_board[move_from] == '♟' and str(move_to)[1] == '8':
             print("Je promoveert een pion! Welk stuk wil je hebben?")
-            while answer:
+            while True:
                 piece = input("t voor toren, p voor paard, l voor loper of k voor koningin:\n").lower()
                 if piece == 't' or piece == 'p' or piece == 'l' or piece == 'k':
-                    answer = False
                     promotion = True
+                    break
 
     # roquade logic
     if move_from == 51 and given_board[move_from] == '♚' and move_to == 71:
@@ -112,6 +115,7 @@ def make_move(given_board, move_from: int, move_to: int):
 
 # promote the pawn to previously selected piece
 def promote(given_board, move_to, piece,):
+    """used for promoting a pawn"""
     if piece == 'k':
         given_board[move_to] = '♛'
     elif piece == 'l':

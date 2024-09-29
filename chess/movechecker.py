@@ -13,6 +13,8 @@
 #       returns if the move is valid or not
 #       does not deal with mate, as this is caught by the chess-API
 
+
+#contains all variable names of the tiles in a board
 fen_sequence = (18, 28, 38, 48, 58, 68, 78, 88
                     , 17, 27, 37, 47, 57, 67, 77, 87
                     , 16, 26, 36, 46, 56, 66, 76, 86
@@ -28,6 +30,7 @@ allowed_moves = None
 
 #returns all the possible moves for a diagonally moving piece, used for bisschop and queen
 def diagonal_moves(given_board,move_from):
+    """adds diagonal moves to possible moves"""
     possible_moves = []
 
     # checks upper right
@@ -69,6 +72,7 @@ def diagonal_moves(given_board,move_from):
 
 #returns all the possible moves for a straight moving piece. used for rook and queen
 def straight_moves(given_board,move_from):
+    """adds straight moves to possible moves"""
     possible_moves = []
 
     #checks upper right
@@ -112,6 +116,7 @@ def straight_moves(given_board,move_from):
 
 #checks if a move is legal. These are the basic checks like not going outside the board and not capturing own pieces
 def is_legal(given_board, move_from: int, move_to: int):
+    """checks if a given move is legal for the piece being moved"""
 
     own_pieces = ['♟', '♜', '♞', '♝', '♛', '♚']
     #used for the 2-step move of a pawn
