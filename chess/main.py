@@ -17,8 +17,7 @@ import movechecker
 import mover
 #other functions
 import functions
-from chess.functions import print_board
-from chess.mover import make_move
+
 
 
 def main(given_fen:str):
