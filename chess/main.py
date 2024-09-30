@@ -86,8 +86,8 @@ def main(given_fen:str):
 
         #check for mate
         if board[8] == -1:
-            make_move(board, opponent_move[0], opponent_move[1])
-            print_board(board)
+            mover.make_move(board, opponent_move[0], opponent_move[1])
+            functions.print_board(board)
             print("Je staat schaakmat,\nGoed gespeeld!")
             game_over = True
 
